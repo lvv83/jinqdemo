@@ -12,10 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.example.demo.models.Region;
 import com.example.demo.models.Territory;
 
-// See @EnableJpaRepositories in DemoApplication
-// Postfix = JinqImpl
-
-public class TerritoriesRepositoryJinqImpl implements CustomTerritoryQueries {
+public class TerritoriesRepositoryImpl implements CustomTerritoryQueries {
 
 	@PersistenceContext
 	private EntityManager em;
@@ -42,16 +39,16 @@ public class TerritoriesRepositoryJinqImpl implements CustomTerritoryQueries {
 		*/
 		
 		// Postgresql LIKE/ILIKE problem
-		final String name2 = name.toLowerCase();
+		final String name2 = name.toLowerCase() + "%";
 		
 		// JINQ doesn't support EXISTS 
 		
 		return jinqSource.territories(em)
 				// use source as second parameter (See InQueryStreamSource for details)
-				.where((x, source) -> JPQL.like(x.getName().toLowerCase(), name2 + "%") || 
+				.where((x, source) -> JPQL.like(x.getName().toLowerCase(), name2) ||
 						JPQL.isIn(x.getId(),
 								source.stream(Region.class)
-								.where(reg -> JPQL.like(reg.getName().toLowerCase(), name2 + "%"))
+								.where(reg -> JPQL.like(reg.getName().toLowerCase(), name2))
 								//.selectAllList(reg ->  reg.getTerritories())
 								// -- OR INSTEAD .selectAllList
 								.selectAll(reg -> JinqStream.from(reg.getTerritories()))
